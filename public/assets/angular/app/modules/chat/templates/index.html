@@ -1,0 +1,50 @@
+<div flex layout="row">
+    <md-card md-theme-watch flex="80">
+        <md-card-title>
+            <md-card-title-text>
+                <md-tabs md-dynamic-height md-border-bottom ng-controler="ChatController" class="form-tabs">
+                    <md-tab>
+                        <md-tab-label>
+                            Общая комната
+                            <md-tooltip md-direction="bottom">
+                                Общение со всеми пользователями
+                            </md-tooltip>
+                        </md-tab-label>
+                        <md-tab-body>
+                            <md-content class="md-padding" flex="grow" layout="row" layout-wrap>
+                                Здесь будет общий чат
+                            </md-content>
+                        </md-tab-body>
+                    </md-tab>
+                    <md-tab ng-repeat="secretChat in secretChats">
+                        <md-tab-label>
+                            {{secretChat.name}}
+                            <md-tooltip md-direction="bottom">
+                                {{secretChat.description}}
+                            </md-tooltip>
+                        </md-tab-label>
+                        <md-tab-body>
+                            <md-content class="md-padding" flex="grow" layout="row" layout-wrap>
+                                Здесь будет чат с юзером {{secretChat.userName}}
+                            </md-content>
+                        </md-tab-body>
+                    </md-tab>
+                </md-tabs>
+            </md-card-title-text>
+        </md-card-title>
+    </md-card>
+
+    <md-card md-theme-watch flex="20">
+        <md-card-title>
+            <md-card-title-text>
+                <span style="font-size: 10pt;">Что бы начать секретный чат выберите пользователя</span>
+                <md-list>
+                    <md-list-item ng-repeat-start="user in users" ng-click="startChatUser(user)" style="font-size: 10pt;">
+                        {{user.name}}
+                    </md-list-item>
+                    <md-divider ng-repeat-end></md-divider>
+                </md-list>
+            </md-card-title-text>
+        </md-card-title>
+    </md-card>
+</div>

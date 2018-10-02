@@ -1,0 +1,9 @@
+.my-toolbar {
+    height: 30px;
+    max-height: 300px;
+}
+
+.header {
+    padding-left: 15px;
+    color: #fff;
+}
