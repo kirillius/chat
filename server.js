@@ -4,9 +4,12 @@ var express = require("express"),
     cookieParser = require("cookie-parser"),
     methodOverride = require("method-override"),
     request = require("request"),
-    session = require("express-session");
+    session = require("express-session"),
+    passport = require('passport'),
+    mongoClient = require("mongodb").MongoClient;
 
 var app = express();
+require("./app/passport")(app);
 
 app.locals.root_dir = __dirname ;
 app.locals.app_dir = __dirname + '/app';
@@ -24,30 +27,30 @@ app.use(session({
     saveUninitialized: true
 }));
 
+app.use(passport.initialize());
+app.use(passport.session());
+
 // Старт express.js приложения, установка на определенный порт
 var server = app.listen(process.env.PORT || 2300, function () {
     var port = server.address().port;
     console.log("App now running on port " + port);
 });
 
-require('./app/routes')(app);
+var config = require('./app/config').getCurrentConfig(app);
+mongoClient.connect(config.database.server, function(err, client){
+    if(err){
+        return console.log(err);
+    }
 
-/*sequelize
-    .authenticate()
-    .then(function(err) {
-        console.log('DB success connection');
-        // force true for recreate database tables
-        require('./app/models').init(sequelize, {force: false}, function(){
-            console.log('Models created success, created init data');
-            require('./app/initData/index')(function() {
-                console.log('All init data created');
-                require('./app/routes')(app, sequelize, passport);
-            });
-        });
-    })
-    .catch(function (err) {
-        console.log('Unable to connect to the database:', err);
-    });*/
+    console.log("success connection to mongo");
+
+    var db = client.db(config.database.name);
+    require('./app/models').init(function(){
+        console.log('Models created success, created routes');
+        require('./app/routes')(app, db);
+    });
+    //client.close();
+});
 
 process.on('uncaughtException', function (err) {
     console.log('uncaughtException', err);

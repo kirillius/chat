@@ -21,7 +21,9 @@ module.exports = {
         }
     },
     generateMainPage : function(req, res) {
-        //res.sendfile('./public/main.html');
+        res.sendfile('./public/main.html');
+    },
+    generateAuthPage : function(req, res) {
         res.sendfile('./public/auth.html');
     }
 };

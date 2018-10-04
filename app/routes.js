@@ -1,48 +1,50 @@
 var _ = require('lodash');
+var passport = require('passport');
 
-module.exports = function(app){
+module.exports = function(app, db){
 
-    //var controllers = require('./controllers')();
+    var controllers = require('./controllers')(db);
     var helpers = require('./helpers');
 
-    //Auth logic
-    /*app.get("/ntlm-auth", passport.authenticate('passport-windowsauth'), function(req, res) {
-        res.redirect('/');
-    });
-    app.get("/auth", passport.authenticate('passport-windowsauth'), controllers.auth.currentUser);
-    app.get("/api/current_user", controllers.auth.currentUser);*/
+    app.get('/auth/vk',
+        passport.authenticate('vk', {
+            scope: ['friends']
+        }),
+        function (req, res) {
+            // The request will be redirected to vk.com
+            // for authentication, so
+            // this function will not be called.
+        });
+
+    app.get('/auth/vk/callback',
+        passport.authenticate('vk', {
+            failureRedirect: '/auth'
+        }),
+        controllers.auth.currentUser,
+        function (req, res) {
+            // Successful authentication
+            //, redirect home.
+            res.redirect('/');
+        });
 
     //Define all routes
-    //defineRestResource('company');
+    defineRestResource('user');
+    defineRestResource('message');
 
-    //app.get("/*", helpers.auth.checkAuth, helpers.common.generateMainPage);
-    app.get("/*", helpers.common.generateMainPage);
+    app.get("/auth", helpers.common.generateAuthPage);
+    app.get("/*", helpers.auth.checkAuth, helpers.common.generateMainPage);
 
     function defineRestResource(modelName){
         var UpperFirstName = _.upperFirst(modelName);
 
         var controller = controllers[modelName];
 
-        // в REST-запросы добавлена дополнительная итерация: helpers.logs.responseAndAddLog(modelName, 'create')
-        // для логирования действий над узлами дерева и их параметрами
-        //helpers.auth.checkAuth,
-        app.get("/api/" + modelName, controller['get' + UpperFirstName], helpers.logs.responseAndAddLog(modelName, 'get'));
-        app.get("/api/" + modelName + "/:id", controller['show' + UpperFirstName], helpers.logs.responseAndAddLog(modelName, 'get'));
+        app.get("/api/" + modelName, controller['get' + UpperFirstName]);
+        app.get("/api/" + modelName + "/:id", controller['show' + UpperFirstName]);
 
         if(controller['create' + UpperFirstName])
-            app.post("/api/" + modelName, helpers.auth.checkRoleAndPermission(modelName, 'Edit'), controller['create' + UpperFirstName], helpers.logs.responseAndAddLog(modelName, 'create'));
+            app.post("/api/" + modelName, controller['create' + UpperFirstName]);
 
-        if(controller['update' + UpperFirstName])
-            app.put("/api/" + modelName + "/:id", helpers.auth.checkRoleAndPermission(modelName, 'Edit'), controller['update' + UpperFirstName], helpers.logs.responseAndAddLog(modelName, 'update'));
-
-        if(controller['delete' + UpperFirstName])
-            app.delete("/api/" + modelName + "/:id", helpers.auth.checkRoleAndPermission(modelName, 'Delete'), controller['delete' + UpperFirstName], helpers.logs.responseAndAddLog(modelName, 'delete'));
-
-        if(controller['restore' + UpperFirstName])
-            app.post("/api/" + modelName + "_restore", helpers.auth.checkRoleAndPermission(modelName, 'Delete'), controller['restore' + UpperFirstName], helpers.logs.responseAndAddLog(modelName, 'restore'));
-
-        if(controller['copy' + UpperFirstName])
-            app.post("/api/" + modelName + "_copy", helpers.auth.checkRoleAndPermission(modelName, 'Edit'), controller['copy' + UpperFirstName], helpers.logs.responseAndAddLog(modelName, 'copy'));
 
         console.log('rest routes for resource ' + modelName + ' is defined');
     }
