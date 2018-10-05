@@ -146,8 +146,22 @@ angular.module('app.chat')
         $scope.users = [];
         $scope.messagesAll = [];
         $scope.secretChats = [];
+        $scope.selectedIndex = 0;
 
         $scope.startChatUser = function(user) {
+            var chat = _.find($scope.secretChats, function(item) {
+                return item.userId == user.idVK;
+            });
+
+            if(chat) {
+                var index = _.findIndex($scope.secretChats, function(item) {
+                    return item.userId == chat.idVK;
+                });
+
+                $scope.selectedIndex = index+1;
+                return;
+            }
+
             var userChat = {
                 name: 'Чат с '+user.name,
                 description: 'Общение с юзером под именем '+user.name,
@@ -156,6 +170,11 @@ angular.module('app.chat')
             };
 
             $scope.secretChats.push(userChat);
+            var index = _.findIndex($scope.secretChats, function(item) {
+                return item.userId == user.idVK;
+            });
+
+            $scope.selectedIndex = index+1;
         }
 
         $scope.getUsers = function() {
@@ -184,14 +203,35 @@ angular.module('app.chat')
                     return chat.userId==userId;
                 });
 
-                if(!currentChat)
-                    return;
+                if(!currentChat) {
+                    //надо создать вкладку чата
+                    var currentSob = _.find($scope.users, function(item) {
+                        return item.idVK == userId;
+                    });
 
-                if(!currentChat.messages)
-                    currentChat.messages = [];
+                    var userChat = {
+                        name: 'Чат с '+currentSob.name,
+                        description: 'Общение с юзером под именем '+currentSob.name,
+                        userName: currentSob.name,
+                        userId: currentSob.idVK
+                    };
 
-                currentChat.messages.push({user: name, text: message});
-                //$scope.messagesAll.push({user: name, text: message});
+                    $scope.secretChats.push(userChat);
+                    var index = _.findIndex($scope.secretChats, function(item) {
+                        return item.userId == currentSob.idVK;
+                    });
+
+                    $scope.selectedIndex = index+1;
+
+                    userChat.messages = [];
+                    userChat.messages.push({user: name, text: message});
+                }
+                else {
+                    if (!currentChat.messages)
+                        currentChat.messages = [];
+
+                    currentChat.messages.push({user: name, text: message});
+                }
             });
         }
 
@@ -210,9 +250,14 @@ angular.module('app.chat')
             $scope.message = '';
         }
 
-        $scope.sendSecretMessage = function(message, userId) {
-            socket.emit('secretMessage', {userId: userId, message: message});
-            $scope.secretMessage = '123';
+        $scope.sendSecretMessage = function(chat) {
+            socket.emit('secretMessage', {userId: chat.userId, message: chat.valueInput});
+
+            if(!chat.messages)
+                chat.messages = [];
+
+            chat.messages.push({user: $scope.currentUser.name, text: chat.valueInput});
+            chat.valueInput = '';
         }
     }]);
 /**

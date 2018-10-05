@@ -2,7 +2,7 @@
     <md-card md-theme-watch flex="80">
         <md-card-title>
             <md-card-title-text>
-                <md-tabs md-dynamic-height md-border-bottom ng-controler="ChatController" class="form-tabs">
+                <md-tabs md-dynamic-height md-border-bottom ng-controler="ChatController" class="form-tabs" md-selected="selectedIndex">
                     <md-tab>
                         <md-tab-label>
                             Общая комната
@@ -12,10 +12,10 @@
                         </md-tab-label>
                         <md-tab-body>
                             <md-content class="md-padding" flex="grow" layout="row" layout-wrap>
-                                <p ng-repeat="message in messagesAll">
-                                    <span ng-if="message.user">{{message.user}}: </span>
-                                    <span>{{message.text}}</span>
-                                </p>
+                                <md-card ng-repeat="message in messagesAll" layout="row" flex="grow" class="messageCard">
+                                    <span ng-if="message.user" class="nameUser">{{message.user}}:</span>
+                                    <span class="message">{{message.text}}</span>
+                                </md-card>
                             </md-content>
                             <md-input-container flex="70">
                                 <label>Ваше сообщение</label>
@@ -33,16 +33,16 @@
                         </md-tab-label>
                         <md-tab-body>
                             <md-content class="md-padding" flex="grow" layout="row" layout-wrap>
-                                <p ng-repeat="message in secretChat.messages">
-                                    <span ng-if="message.user">{{message.user}}: </span>
-                                    <span>{{message.text}}</span>
-                                </p>
+                                <md-card ng-repeat="message in secretChat.messages" layout="row" flex="grow" class="messageCard">
+                                    <span ng-if="message.user" class="nameUser">{{message.user}}:</span>
+                                    <span class="message">{{message.text}}</span>
+                                </md-card>
                             </md-content>
                             <md-input-container flex="70">
                                 <label>Ваше сообщение</label>
-                                <input ng-model="secretMessage">
+                                <input ng-model="secretChat.valueInput">
                             </md-input-container>
-                            <md-button class="md-raised" ng-click="sendSecretMessage(secretMessage, secretChat.userId)" flex="30">Отправить</md-button>
+                            <md-button class="md-raised" ng-click="sendSecretMessage(secretChat)" flex="30">Отправить</md-button>
                         </md-tab-body>
                     </md-tab>
                 </md-tabs>
