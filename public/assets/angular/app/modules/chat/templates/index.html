@@ -12,8 +12,16 @@
                         </md-tab-label>
                         <md-tab-body>
                             <md-content class="md-padding" flex="grow" layout="row" layout-wrap>
-                                Здесь будет общий чат
+                                <p ng-repeat="message in messagesAll">
+                                    <span ng-if="message.user">{{message.user}}: </span>
+                                    <span>{{message.text}}</span>
+                                </p>
                             </md-content>
+                            <md-input-container flex="70">
+                                <label>Ваше сообщение</label>
+                                <input ng-model="message">
+                            </md-input-container>
+                            <md-button class="md-raised" ng-click="sendMessage(message)" flex="30">Отправить</md-button>
                         </md-tab-body>
                     </md-tab>
                     <md-tab ng-repeat="secretChat in secretChats">
@@ -25,8 +33,16 @@
                         </md-tab-label>
                         <md-tab-body>
                             <md-content class="md-padding" flex="grow" layout="row" layout-wrap>
-                                Здесь будет чат с юзером {{secretChat.userName}}
+                                <p ng-repeat="message in secretChat.messages">
+                                    <span ng-if="message.user">{{message.user}}: </span>
+                                    <span>{{message.text}}</span>
+                                </p>
                             </md-content>
+                            <md-input-container flex="70">
+                                <label>Ваше сообщение</label>
+                                <input ng-model="secretMessage">
+                            </md-input-container>
+                            <md-button class="md-raised" ng-click="sendSecretMessage(secretMessage, secretChat.userId)" flex="30">Отправить</md-button>
                         </md-tab-body>
                     </md-tab>
                 </md-tabs>

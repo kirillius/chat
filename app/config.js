@@ -20,8 +20,8 @@ module.exports = {
     },
     'development': {
     },
-    'getCurrentConfig': function(app){
+    'getCurrentConfig': function(){
         var defaultEnvironment = 'production';
-        return _.merge({}, this.general, this[app.get('env') || defaultEnvironment]);
+        return _.merge({}, this.general, this[defaultEnvironment]);
     }
 };

@@ -6,7 +6,10 @@ var express = require("express"),
     request = require("request"),
     session = require("express-session"),
     passport = require('passport'),
-    mongoClient = require("mongodb").MongoClient;
+    mongoClient = require("mongodb").MongoClient,
+    socketIO = require('socket.io');
+
+var _ = require('lodash');
 
 var app = express();
 require("./app/passport")(app);
@@ -36,7 +39,44 @@ var server = app.listen(process.env.PORT || 2300, function () {
     console.log("App now running on port " + port);
 });
 
-var config = require('./app/config').getCurrentConfig(app);
+var io = socketIO.listen(server);
+var socketUsers = [];
+io.sockets.on('connection', function (socket) {
+    var nameUser = socket.handshake.query['user'];
+    var userId = socket.handshake.query['userId'];
+
+    var socketUser = {socket: socket.id, user: userId};
+    if(userId && !_.find(socketUsers, function(item) {
+        item.user==userId;
+    }))
+        socketUsers.push(socketUser);
+
+    socket.broadcast.emit('newUser', nameUser);
+
+    socket.on('message', function(message){
+        io.sockets.emit('messageToAll', message, nameUser);
+    });
+
+    socket.on('secretMessage', function(messageObj){
+        var socketObj = _.find(socketUsers, function(item) {
+            return item.user==messageObj.userId;
+        });
+
+        if(!socketObj)
+            return;
+
+        io.to(socketObj.socket).emit('messageToUser', messageObj.message, nameUser, userId);
+    });
+
+    socket.on('disconnect', function(){
+        var socketUser = _.find(socketUsers, {socket: socket.id});
+        _.remove(socketUsers, socketUser);
+    });
+});
+
+require('./app/routes')(app);
+
+/*var config = require('./app/config').getCurrentConfig(app);
 mongoClient.connect(config.database.server, function(err, client){
     if(err){
         return console.log(err);
@@ -50,7 +90,7 @@ mongoClient.connect(config.database.server, function(err, client){
         require('./app/routes')(app, db);
     });
     //client.close();
-});
+});*/
 
 process.on('uncaughtException', function (err) {
     console.log('uncaughtException', err);

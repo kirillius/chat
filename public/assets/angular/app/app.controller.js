@@ -1,4 +1,4 @@
 angular.module('app')
     .controller('AppController', ['$scope', '$rootScope', '$state', '$http', 'AppPaths', function($scope, $rootScope, $state, $http, AppPaths) {
-        var self = this;
+        var app = this;
     }]);

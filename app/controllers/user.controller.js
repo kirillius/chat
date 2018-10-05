@@ -1,7 +1,10 @@
-module.exports = function (db) {
+var dbUsers = require('../db').users;
+var CommonHelper = require('../helpers').common;
+
+module.exports = function () {
     return {
         getUser: function (req, res) {
-            var users = db.collection('users');
+            dbUsers.get().then(CommonHelper.prepareResponse(res)).catch(CommonHelper.errorResponse(res))
         },
         showUser: function (req, res) {
         },

@@ -1,5 +1,6 @@
 global.moment = require('moment');
 global.async = require('async');
+global._ = require('lodash');
 
 require('angular');
 require('angular-ui-router');

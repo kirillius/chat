@@ -1,10 +1,12 @@
 var _ = require('lodash');
 var passport = require('passport');
 
-module.exports = function(app, db){
+module.exports = function(app){
 
-    var controllers = require('./controllers')(db);
+    var controllers = require('./controllers')();
     var helpers = require('./helpers');
+
+    app.get('/api/current_user', helpers.auth.currentUser);
 
     app.get('/auth/vk',
         passport.authenticate('vk', {
