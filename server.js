@@ -10,6 +10,7 @@ var express = require("express"),
     socketIO = require('socket.io');
 
 var _ = require('lodash');
+var messagesDB = require("./app/db/messages.db");
 
 var app = express();
 require("./app/passport")(app);
@@ -51,13 +52,39 @@ io.sockets.on('connection', function (socket) {
     }))
         socketUsers.push(socketUser);
 
+    var config = require('./app/config').getCurrentConfig(app);
+    var db = null;
+    var clientM = null;
+    mongoClient.connect(config.database.server, function(err, client){
+
+        if(err){
+            console.log(err);
+            return;
+        }
+
+        db = client.db(config.database.name);
+        clientM = client;
+    });
+
     socket.broadcast.emit('newUser', nameUser);
 
     socket.on('message', function(message){
         io.sockets.emit('messageToAll', message, nameUser);
+        messagesDB.create(db, {
+            sender: userId,
+            message: message,
+            nameSender: nameUser
+        });
     });
 
     socket.on('secretMessage', function(messageObj){
+        messagesDB.create(db, {
+            sender: userId,
+            recipient: messageObj.userId,
+            message: messageObj.message,
+            nameSender: nameUser
+        });
+
         var socketObj = _.find(socketUsers, function(item) {
             return item.user==messageObj.userId;
         });
@@ -71,6 +98,8 @@ io.sockets.on('connection', function (socket) {
     socket.on('disconnect', function(){
         var socketUser = _.find(socketUsers, {socket: socket.id});
         _.remove(socketUsers, socketUser);
+        clientM.close();
+        db=null;
     });
 });
 

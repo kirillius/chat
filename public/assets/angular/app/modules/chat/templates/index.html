@@ -13,7 +13,7 @@
                         <md-tab-body>
                             <md-content class="md-padding" flex="grow" layout="row" layout-wrap>
                                 <md-card ng-repeat="message in messagesAll" layout="row" flex="grow" class="messageCard">
-                                    <span ng-if="message.user" class="nameUser">{{message.user}}:</span>
+                                    <span ng-if="message.nameSender" class="nameUser">{{message.nameSender}}:</span>
                                     <span class="message">{{message.text}}</span>
                                 </md-card>
                             </md-content>
@@ -34,7 +34,7 @@
                         <md-tab-body>
                             <md-content class="md-padding" flex="grow" layout="row" layout-wrap>
                                 <md-card ng-repeat="message in secretChat.messages" layout="row" flex="grow" class="messageCard">
-                                    <span ng-if="message.user" class="nameUser">{{message.user}}:</span>
+                                    <span ng-if="message.nameSender" class="nameUser">{{message.nameSender}}:</span>
                                     <span class="message">{{message.text}}</span>
                                 </md-card>
                             </md-content>

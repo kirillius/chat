@@ -21,27 +21,37 @@ angular.module('app.chat')
                 return;
             }
 
-            var userChat = {
-                name: 'Чат с '+user.name,
-                description: 'Общение с юзером под именем '+user.name,
-                userName: user.name,
-                userId: user.idVK
-            };
+            rest.get('message?recipient='+user.idVK).then(function(messages) {
+                var userChat = {
+                    name: 'Чат с '+user.name,
+                    description: 'Общение с юзером под именем '+user.name,
+                    userName: user.name,
+                    userId: user.idVK
+                };
+                userChat.messages = messages;
 
-            $scope.secretChats.push(userChat);
-            var index = _.findIndex($scope.secretChats, function(item) {
-                return item.userId == user.idVK;
+                $scope.secretChats.push(userChat);
+                var index = _.findIndex($scope.secretChats, function(item) {
+                    return item.userId == user.idVK;
+                });
+
+                $scope.selectedIndex = index+1;
             });
-
-            $scope.selectedIndex = index+1;
         }
 
         $scope.getUsers = function() {
             rest.get('user').then(function(users) {
                 var executingUsers = _.reject(users, function(user) { return user.idVK==$scope.currentUser.idVK });
                 $scope.users = executingUsers;
-            })
+            });
         };
+
+        $scope.getBasicMessages = function() {
+            rest.get('message').then(function(messages) {
+                $scope.messagesAll = messages;
+            });
+        };
+        $scope.getBasicMessages();
 
         $scope.initSocket = function() {
             socket.connect({query: "user=" + $scope.currentUser.name + "&userId=" + $scope.currentUser.idVK});
@@ -53,7 +63,7 @@ angular.module('app.chat')
 
             socket.on('messageToAll', function(message, name){
                 //console.log(name + ' | => ' + message);
-                $scope.messagesAll.push({user: name, text: message});
+                $scope.messagesAll.push({nameSender: name, text: message});
             });
 
             socket.on('messageToUser', function(message, name, userId){
@@ -89,7 +99,7 @@ angular.module('app.chat')
                     if (!currentChat.messages)
                         currentChat.messages = [];
 
-                    currentChat.messages.push({user: name, text: message});
+                    currentChat.messages.push({nameSender: name, text: message});
                 }
             });
         }
@@ -115,7 +125,7 @@ angular.module('app.chat')
             if(!chat.messages)
                 chat.messages = [];
 
-            chat.messages.push({user: $scope.currentUser.name, text: chat.valueInput});
+            chat.messages.push({nameSender: $scope.currentUser.name, text: chat.valueInput});
             chat.valueInput = '';
         }
     }]);

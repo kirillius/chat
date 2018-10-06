@@ -42,7 +42,7 @@ module.exports = function(app){
         var controller = controllers[modelName];
 
         app.get("/api/" + modelName, controller['get' + UpperFirstName]);
-        app.get("/api/" + modelName + "/:id", controller['show' + UpperFirstName]);
+        //app.get("/api/" + modelName + "/:id", controller['show' + UpperFirstName]);
 
         if(controller['create' + UpperFirstName])
             app.post("/api/" + modelName, controller['create' + UpperFirstName]);
