@@ -140,7 +140,7 @@ angular.module('app')
         };
     }]);
 angular.module('app.chat')
-    .controller('ChatController', ['$scope', '$state', '$http', 'AppPaths', 'rest', 'socket', function($scope, $state, $http, AppPaths, rest, socket) {
+    .controller('ChatController', ['$scope', '$state', '$http', 'AppPaths', 'rest', 'socket', '$q', function($scope, $state, $http, AppPaths, rest, socket, $q) {
 
         $scope.currentUser = undefined;
         $scope.users = [];
@@ -162,21 +162,11 @@ angular.module('app.chat')
                 return;
             }
 
-            rest.get('message?recipient='+user.idVK).then(function(messages) {
-                var userChat = {
-                    name: 'Чат с '+user.name,
-                    description: 'Общение с юзером под именем '+user.name,
-                    userName: user.name,
-                    userId: user.idVK
-                };
-                userChat.messages = messages;
-
-                $scope.secretChats.push(userChat);
-                var index = _.findIndex($scope.secretChats, function(item) {
-                    return item.userId == user.idVK;
-                });
-
-                $scope.selectedIndex = index+1;
+            getMessageSecretChat(user.idVK).promise.then(function(messages) {
+                generateTabSecretChat(user, messages);
+            }).catch(function(err) {
+                console.log("error sending message secret");
+                console.log(err);
             });
         }
 
@@ -198,17 +188,14 @@ angular.module('app.chat')
             socket.connect({query: "user=" + $scope.currentUser.name + "&userId=" + $scope.currentUser.idVK});
 
             socket.on('newUser', function(userName){
-                //console.log('New user has been connected to chat | ' + userName);
                 $scope.messagesAll.push({text: 'В чат входит '+userName});
             });
 
             socket.on('messageToAll', function(message, name){
-                //console.log(name + ' | => ' + message);
                 $scope.messagesAll.push({nameSender: name, text: message});
             });
 
             socket.on('messageToUser', function(message, name, userId){
-                //console.log(name + ' | => ' + message);
                 var currentChat = _.find($scope.secretChats, function(chat) {
                     return chat.userId==userId;
                 });
@@ -219,22 +206,7 @@ angular.module('app.chat')
                         return item.idVK == userId;
                     });
 
-                    var userChat = {
-                        name: 'Чат с '+currentSob.name,
-                        description: 'Общение с юзером под именем '+currentSob.name,
-                        userName: currentSob.name,
-                        userId: currentSob.idVK
-                    };
-
-                    $scope.secretChats.push(userChat);
-                    var index = _.findIndex($scope.secretChats, function(item) {
-                        return item.userId == currentSob.idVK;
-                    });
-
-                    $scope.selectedIndex = index+1;
-
-                    userChat.messages = [];
-                    userChat.messages.push({user: name, text: message});
+                    generateTabSecretChat(currentSob, [{nameSender: name, text: message}]);
                 }
                 else {
                     if (!currentChat.messages)
@@ -268,6 +240,34 @@ angular.module('app.chat')
 
             chat.messages.push({nameSender: $scope.currentUser.name, text: chat.valueInput});
             chat.valueInput = '';
+        }
+
+        var generateTabSecretChat = function(user, messages) {
+            var userChat = {
+                name: 'Чат с '+user.name,
+                description: 'Общение с юзером под именем '+user.name,
+                userName: user.name,
+                userId: user.idVK
+            };
+            userChat.messages = messages;
+
+            $scope.secretChats.push(userChat);
+            var index = _.findIndex($scope.secretChats, function(item) {
+                return item.userId == user.idVK;
+            });
+
+            $scope.selectedIndex = index+1;
+        };
+
+        var getMessageSecretChat = function(userId) {
+            var deferred = $q.defer();
+            rest.get('message?recipient='+userId).then(function(messages) {
+                deferred.resolve(messages);
+            }).catch(function(err) {
+                deferred.reject(err);
+            });
+
+            return deferred;
         }
     }]);
 /**
