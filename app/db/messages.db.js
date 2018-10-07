@@ -21,12 +21,12 @@ module.exports = {
                             { $and : [ { sender :  req.query.recipient.toString() }, { recipient : req.user.idVK.toString() } ] },
                             { $and : [ { sender : req.user.idVK.toString() }, { recipient : req.query.recipient.toString() } ] }
                         ]
-                    }).toArray(function(err, messages) {
+                    }).sort({date: 1}).toArray(function(err, messages) {
                         client.close();
                         return resolve(messages);
                     });
                 else {
-                    messagesCollection.find({"recipient": null}).toArray(function (err, messages) {
+                    messagesCollection.find({ "recipient": null}).sort({date: 1}).toArray(function (err, messages) {
                         client.close();
                         return resolve(messages);
                     });
